@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import config from "./config/index.js";
 import authRoutes from "./routes/auth.routes.js";
+import monitorRoutes from "./routes/monitor.routes.js";
 
 import mongoose from "mongoose";
 import { isRedisReady } from "./config/redis.js";
@@ -33,6 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Auth routes
 app.use("/auth", authRoutes);
+
+// Monitor routes
+app.use("/api/monitors", monitorRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

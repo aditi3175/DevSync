@@ -21,6 +21,7 @@
   "homepage": "https://github.com/aditi3175/DevSync#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.65.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
