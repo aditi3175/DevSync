@@ -2,7 +2,11 @@
 import Monitor from "../models/Monitor.js";
 import CheckHistory from "../models/CheckHistory.js";
 import { performCheck } from "../services/check.service.js";
-import { enqueueMonitorCheck } from "../services/monitorQueue.service.js";
+import {
+  enqueueMonitorCheck,
+  addRepeatableMonitorJob,
+  removeRepeatableMonitorJob,
+} from "../services/monitorQueue.service.js";
 
 /**
  * Controller: create monitor
@@ -24,6 +28,21 @@ export async function createMonitor(req, res, next) {
       assertions: payload.assertions || [],
       enabled: payload.enabled !== false,
     });
+
+    // Add repeatable job if monitor is enabled
+    try {
+      if (monitor.enabled) {
+        await addRepeatableMonitorJob(
+          monitor._id.toString(),
+          monitor.frequencyMinutes
+        );
+      }
+    } catch (err) {
+      console.warn(
+        "[monitor.controller] Failed to schedule repeat job on create:",
+        err?.message ?? err
+      );
+    }
 
     return res.status(201).json({ success: true, monitor });
   } catch (err) {
@@ -100,6 +119,23 @@ export async function updateMonitor(req, res, next) {
     });
 
     await monitor.save();
+
+    // Update repeatable job: remove old and (re)create if enabled
+    try {
+      await removeRepeatableMonitorJob(monitor._id.toString());
+      if (monitor.enabled) {
+        await addRepeatableMonitorJob(
+          monitor._id.toString(),
+          monitor.frequencyMinutes
+        );
+      }
+    } catch (err) {
+      console.warn(
+        "[monitor.controller] Failed to update repeat job on update:",
+        err?.message ?? err
+      );
+    }
+
     return res.json({ success: true, monitor });
   } catch (err) {
     next(err);
@@ -120,6 +156,16 @@ export async function deleteMonitor(req, res, next) {
         .json({ success: false, message: "Monitor not found" });
     if (String(monitor.ownerId) !== ownerId)
       return res.status(403).json({ success: false, message: "Forbidden" });
+
+    // Remove repeatable job first
+    try {
+      await removeRepeatableMonitorJob(monitor._id.toString());
+    } catch (err) {
+      console.warn(
+        "[monitor.controller] Failed to remove repeat job on delete:",
+        err?.message ?? err
+      );
+    }
 
     await monitor.remove();
     // Optionally remove CheckHistory entries for this monitor
@@ -160,10 +206,6 @@ export async function runMonitorNow(req, res, next) {
 
 /**
  * OPTIONAL: immediate synchronous run (useful for quick debugging)
- * NOTE: This runs the check in the API process and may be slow/blocking.
- * Not recommended for production; prefer enqueueMonitorCheck + worker.
- *
- * If you want to use this, expose it as a separate route (e.g., POST /:id/run-now)
  */
 export async function runMonitorImmediate(req, res, next) {
   try {

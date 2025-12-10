@@ -5,12 +5,13 @@ const { Queue } = bullmq;
 
 import config from "../config/index.js";
 
-const QUEUE_NAME = "monitor-checks";
+const QUEUE_NAME = "notification-queue";
+
 const connectionOption = config.redis.url
   ? { connection: { url: config.redis.url } }
   : {};
 
-export const monitorQueue = new Queue(QUEUE_NAME, {
+export const notificationQueue = new Queue(QUEUE_NAME, {
   ...connectionOption,
   defaultJobOptions: {
     removeOnComplete: true,
@@ -18,4 +19,4 @@ export const monitorQueue = new Queue(QUEUE_NAME, {
   },
 });
 
-console.log("MonitorQueue initialized");
+console.log("📨 NotificationQueue initialized");
