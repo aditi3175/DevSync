@@ -23,9 +23,11 @@ const MonitorSchema = new Schema(
     frequencyMinutes: { type: Number, required: true, default: 5 },
     timeoutMs: { type: Number, default: 5000 },
     assertions: { type: [String], default: [] }, // simple assertions like "status==200"
-    enabled: { type: Boolean, default: true },
 
-    // last run state
+    // scheduling / frequency
+    frequencyMinutes: { type: Number, default: 1 },
+
+    // last known state
     lastStatus: {
       type: String,
       enum: ["up", "down", "unknown"],
@@ -33,7 +35,15 @@ const MonitorSchema = new Schema(
     },
     lastResponseTime: { type: Number, default: null },
     lastCheckedAt: { type: Date, default: null },
+
+    // --- Step B fields ---
+    consecutiveFails: { type: Number, default: 0 }, // increments on failure
+    alertThreshold: { type: Number, default: 1 }, // send alert only after this many consecutive fails
+    lastAlertAt: { type: Date, default: null }, // last time an alert was sent (down or up)
+
+    enabled: { type: Boolean, default: true },
   },
+
   {
     timestamps: true,
   }

@@ -6,6 +6,7 @@ const { Worker } = bullmq;
 
 import config from "../config/index.js";
 import Monitor from "../models/Monitor.js";
+import User from "../models/User.js";
 import CheckHistory from "../models/CheckHistory.js";
 import { performCheck } from "../services/check.service.js";
 import { connectDB, closeDB } from "../config/db.js";
@@ -18,6 +19,17 @@ const QUEUE_NAME = "monitor-checks";
 const connectionOption = config.redis.url
   ? { connection: { url: config.redis.url } }
   : {};
+
+/**
+ * Helper: decide if we can send alert w.r.t cooldown and user settings
+ * Cooldown value is taken from user.cooldownMinutes (if exists), otherwise fallback to monitor or default 10.
+ */
+function allowedByCooldown(lastAlertAt, cooldownMinutes) {
+  if (!cooldownMinutes || cooldownMinutes <= 0) return true;
+  if (!lastAlertAt) return true;
+  const elapsedMs = Date.now() - new Date(lastAlertAt).getTime();
+  return elapsedMs >= cooldownMinutes * 60 * 1000;
+}
 
 /**
  * Initialize: connect to MongoDB first, then start worker.
@@ -48,7 +60,7 @@ async function init() {
     const shutdown = async () => {
       console.log("🛑 Worker shutdown initiated...");
       try {
-        await worker.close(); // stops receiving new jobs and closes
+        await worker.close();
       } catch (e) {
         console.warn("Worker close error:", e?.message ?? e);
       }
@@ -78,16 +90,19 @@ async function init() {
 }
 
 /**
- * Job handler
+ * Job handler - implements Step B:
+ *  - increments consecutiveFails on failure
+ *  - resets consecutiveFails on success
+ *  - sends alerts only after consecutiveFails >= alertThreshold
+ *  - respects cooldownMinutes (from owner/user)
  */
 async function handle(job) {
   const { monitorId, trigger = "manual" } = job.data;
-
   console.log(
     `[worker] Processing job ${job.id} for monitor=${monitorId} trigger=${trigger}`
   );
 
-  // read monitor from DB
+  // load monitor
   let monitor;
   try {
     monitor = await Monitor.findById(monitorId);
@@ -106,11 +121,25 @@ async function handle(job) {
     return { ok: false, reason: "monitor-disabled" };
   }
 
-  const previousStatus = monitor.lastStatus; // store before update
-  const result = await performCheck(monitor);
+  const previousStatus = monitor.lastStatus || "unknown";
+  // Run the actual check (your existing service)
+  let result;
+  try {
+    result = await performCheck(monitor);
+  } catch (err) {
+    console.error(`[worker] performCheck error for ${monitorId}:`, err);
+    // treat as failed check
+    result = {
+      ok: false,
+      statusCode: null,
+      responseTimeMs: null,
+      error: err?.message ?? String(err),
+      checkedAt: new Date(),
+    };
+  }
 
-  // Save CheckHistory
-  let history;
+  // Save CheckHistory (best-effort)
+  let history = null;
   try {
     history = await CheckHistory.create({
       monitorId: monitor._id,
@@ -123,62 +152,132 @@ async function handle(job) {
       checkedAt: result.checkedAt,
     });
   } catch (err) {
-    console.error(
-      `[worker] Failed to write CheckHistory for monitor ${monitorId}:`,
-      err
+    console.warn(
+      `[worker] Failed to write CheckHistory for ${monitorId}:`,
+      err?.message ?? err
     );
-    // continue — we still update monitor and attempt notifications
   }
 
-  // Update Monitor document
+  // Update lastStatus/responseTime/checkedAt and handle consecutiveFails
   const newStatus = result.ok ? "up" : "down";
+  const wasDown = previousStatus === "down";
+
+  if (newStatus === "down") {
+    monitor.consecutiveFails = (monitor.consecutiveFails || 0) + 1;
+  } else {
+    // success => reset consecutive fails
+    monitor.consecutiveFails = 0;
+  }
+
   monitor.lastStatus = newStatus;
   monitor.lastResponseTime = result.responseTimeMs;
   monitor.lastCheckedAt = result.checkedAt;
 
+  // Save monitor early so we can base decisions on latest values (but we'll update again if we send alert)
   try {
     await monitor.save();
   } catch (err) {
-    console.error(`[worker] Failed to update Monitor ${monitorId}:`, err);
+    console.warn(
+      `[worker] Failed to update monitor ${monitorId}:`,
+      err?.message ?? err
+    );
   }
 
-  // Notifications: enqueue only when status changes
+  // Determine alert threshold and cooldown
+  const alertThreshold = Number(monitor.alertThreshold || 1);
+
+  // load user (owner) to get cooldown preference if available
+  let user = null;
   try {
-    if (previousStatus !== newStatus) {
-      if (newStatus === "down") {
-        console.log(
-          `[worker] Status change detected: ${previousStatus} -> down for monitor=${monitorId}. Enqueuing DOWN notification.`
-        );
-        await notifyMonitorDown(monitor, result);
-        console.log(
-          `[worker] Enqueued DOWN notification for monitor=${monitorId}`
-        );
+    if (monitor.ownerId) {
+      user = await User.findById(monitor.ownerId).lean();
+    }
+  } catch (err) {
+    console.warn(
+      `[worker] Failed to load user for monitor ${monitorId}:`,
+      err?.message ?? err
+    );
+  }
+
+  const cooldownMinutes = user?.cooldownMinutes ?? 10; // default 10 min if not set
+
+  // Decide whether to send DOWN alert
+  let didEnqueueNotification = false;
+  const now = new Date();
+
+  if (newStatus === "down") {
+    if ((monitor.consecutiveFails || 0) >= alertThreshold) {
+      // check cooldown
+      if (allowedByCooldown(monitor.lastAlertAt, cooldownMinutes)) {
+        // enqueue DOWN notification
+        try {
+          await notifyMonitorDown(monitor, result);
+          // update lastAlertAt on monitor
+          monitor.lastAlertAt = now;
+          await monitor.save();
+          console.log(
+            `[worker] Enqueued DOWN notification for monitor=${monitor._id}`
+          );
+          didEnqueueNotification = true;
+        } catch (err) {
+          console.error(
+            `[worker] Failed to enqueue DOWN notification for ${monitor._id}:`,
+            err?.message ?? err
+          );
+        }
       } else {
         console.log(
-          `[worker] Status change detected: ${previousStatus} -> up for monitor=${monitorId}. Enqueuing UP notification.`
-        );
-        await notifyMonitorUp(monitor, result);
-        console.log(
-          `[worker] Enqueued UP notification for monitor=${monitorId}`
+          `[worker] Skipping DOWN alert for monitor=${monitor._id} due to cooldown`
         );
       }
     } else {
-      // optional: debug log
-      // console.log(`[worker] No status change for monitor=${monitorId} (${newStatus})`);
+      console.log(
+        `[worker] DOWN detected but consecutiveFails=${monitor.consecutiveFails} < alertThreshold=${alertThreshold} — not alerting yet`
+      );
     }
-  } catch (err) {
-    console.error(
-      `[worker] Failed to enqueue notification for monitor ${monitorId}:`,
-      err
-    );
-    // do not throw — notification failure shouldn't stop monitoring
+  } else {
+    // newStatus === "up"
+    // Option: send UP notification when monitor recovered (previously down)
+    // We'll send UP if previousStatus was 'down' OR monitor had consecutiveFails > 0
+    if (
+      wasDown ||
+      (monitor.consecutiveFails === 0 && previousStatus === "down")
+    ) {
+      // ensure cooldown for UP as well (optional)
+      if (allowedByCooldown(monitor.lastAlertAt, cooldownMinutes)) {
+        try {
+          await notifyMonitorUp(monitor, result);
+          monitor.lastAlertAt = now;
+          await monitor.save();
+          console.log(
+            `[worker] Enqueued UP notification for monitor=${monitor._id}`
+          );
+          didEnqueueNotification = true;
+        } catch (err) {
+          console.error(
+            `[worker] Failed to enqueue UP notification for ${monitor._id}:`,
+            err?.message ?? err
+          );
+        }
+      } else {
+        console.log(
+          `[worker] Skipping UP alert for monitor=${monitor._id} due to cooldown`
+        );
+      }
+    } else {
+      // no recovery to report
+      // console.log(`[worker] No recovery alert for monitor=${monitor._id}`);
+    }
   }
 
   console.log(
-    `[worker] Completed job ${job.id} monitor=${monitorId} ok=${result.ok}`
+    `[worker] Completed job ${job.id} monitor=${monitorId} ok=${result.ok} enqueuedNotification=${didEnqueueNotification}`
   );
-
-  return { ok: result.ok, historyId: history?._id ?? null };
+  return {
+    ok: result.ok,
+    historyId: history?._id ?? null,
+    enqueuedNotification: didEnqueueNotification,
+  };
 }
 
 // start

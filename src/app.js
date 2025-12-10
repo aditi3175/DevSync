@@ -8,7 +8,7 @@ import monitorRoutes from "./routes/monitor.routes.js";
 
 import mongoose from "mongoose";
 import { isRedisReady } from "./config/redis.js";
-
+import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 
@@ -37,6 +37,9 @@ app.use("/auth", authRoutes);
 
 // Monitor routes
 app.use("/api/monitors", monitorRoutes);
+
+// User routes
+app.use("/api/user", userRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

@@ -1,6 +1,6 @@
 // src/middleware/auth.js
 import { verifyAccessToken } from "../services/token.service.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export default async function authMiddleware(req, res, next) {
   try {

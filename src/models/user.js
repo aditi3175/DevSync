@@ -39,6 +39,12 @@ const UserSchema = new Schema(
 
     // optional flags
     isEmailVerified: { type: Boolean, default: false },
+
+    // NEW: Notification preferences
+    alertsEnabled: { type: Boolean, default: true },
+    alertOnDown: { type: Boolean, default: true },
+    alertOnUp: { type: Boolean, default: true },
+    cooldownMinutes: { type: Number, default: 10 }, // No more than 1 email every 10 mins
   },
   {
     timestamps: true,
