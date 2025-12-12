@@ -8,7 +8,7 @@ import {
 import api from "../api.js"; 
 import { useNavigate } from "react-router-dom";
 
-// 1. Context Object Create Karein
+// 1. Create Context
 const AuthContext = createContext(null);
 
 // 2. Custom Hook for easy access
@@ -54,11 +54,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // Token Axios Interceptor mein automatically attach ho jaayega
       const response = await api.get("/auth/me");
       setUser(response.data.user); // Assuming backend sends { user: { email, name, ... } }
     } catch (error) {
-      // Agar token invalid ya expired hai (401), toh logout karein
+
       if (error.response?.status === 401) {
         console.log("Token expired during checkAuth, clearing session.");
         localStorage.removeItem("token");
@@ -84,7 +83,6 @@ export const AuthProvider = ({ children }) => {
     token: getToken(),
   };
 
-  // Loading screen dikhao jab tak auth check ho raha hai
   if (isLoading) {
     return <div>Loading App...</div>; // A placeholder loading screen
   }

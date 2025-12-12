@@ -25,7 +25,6 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Optional: 404 Page */}
         <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>
     </div>

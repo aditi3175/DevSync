@@ -4,6 +4,7 @@ import api from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { ArrowLeft, Bell, Mail, Clock } from "lucide-react";
 
+// Settings Page Component
 const SettingsPage = () => {
   const { user } = useAuth();
   const [settings, setSettings] = useState(null);

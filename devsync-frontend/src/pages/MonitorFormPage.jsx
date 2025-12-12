@@ -36,7 +36,7 @@ const MonitorFormPage = () => {
   }, [isEditing, id]);
 
   const handleSuccess = (monitor) => {
-    // Navigation happens in MonitorForm component
+    // Navigation happens in MonitorForm component.
   };
 
   return (

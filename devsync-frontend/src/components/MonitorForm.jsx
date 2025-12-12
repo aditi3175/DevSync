@@ -360,7 +360,7 @@ const MonitorForm = ({ monitorId, initialData, onSuccess }) => {
       {/* Headers & Body */}
       <div className="backdrop-blur-md bg-slate-800/30 border border-slate-700/50 rounded-2xl p-8 space-y-6">
         <h2 className="text-xl font-bold text-white flex items-center space-x-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-purple-400 to-pink-600 rounded"></div>
+          <div className="w-1 h-6 bg-linear-to-b from-purple-400 to-pink-600 rounded"></div>
           <span>Advanced Options</span>
         </h2>
 

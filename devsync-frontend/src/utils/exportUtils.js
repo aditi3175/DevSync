@@ -4,7 +4,7 @@ export const exportAsCSV = (history, monitorName) => {
     return;
   }
 
-  // CSV Headers
+  // CSV Headers.
   const headers = [
     "Time",
     "Status",

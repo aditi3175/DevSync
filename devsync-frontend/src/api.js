@@ -6,12 +6,14 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Request interceptor to add auth token
 api.interceptors.request.use((cfg) => {
   const token = localStorage.getItem("token");
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
   return cfg;
 });
 
+// Response interceptor to handle 401 errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {

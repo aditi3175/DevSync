@@ -8,7 +8,7 @@ const LoginPage = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated.
   if (isAuthenticated) {
     navigate("/dashboard", { replace: true });
     return null;

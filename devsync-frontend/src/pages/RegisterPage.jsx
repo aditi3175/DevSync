@@ -16,7 +16,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated.
   if (isAuthenticated) {
     navigate("/dashboard", { replace: true });
     return null;

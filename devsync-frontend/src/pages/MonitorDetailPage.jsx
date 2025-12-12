@@ -24,7 +24,7 @@ import {
   Code,
 } from "lucide-react";
 
-// Export utility functions
+// Export utility functions.
 const exportAsCSV = (history, monitorName) => {
   if (!history || history.length === 0) {
     alert("No data to export!");
