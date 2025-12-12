@@ -9,9 +9,7 @@ import { signAccessToken } from "../services/token.service.js";
 import config from "../config/index.js";
 import ms from "ms";
 
-/**
- * Helper cookie options
- */
+// Helper to get cookie options
 function cookieOptions() {
   const isProd = config.server.env === "production";
   const maxAgeMs =

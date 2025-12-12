@@ -1,4 +1,3 @@
-// src/routes/monitor.js
 import express from "express";
 import * as ctrl from "../controllers/monitor.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -32,5 +31,8 @@ router.delete("/:id", ctrl.deleteMonitor);
 
 // manual run
 router.post("/:id/run", ctrl.runMonitorNow);
+
+//Get check history for monitor (Last 24 hours)
+router.get("/:id/history", ctrl.getMonitorHistory);
 
 export default router;

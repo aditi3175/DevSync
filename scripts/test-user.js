@@ -1,4 +1,3 @@
-// scripts/test-user.js
 import mongoose from "mongoose";
 import config from "../src/config/index.js";
 import { connectDB, closeDB } from "../src/config/db.js";

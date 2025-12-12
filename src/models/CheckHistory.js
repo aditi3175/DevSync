@@ -23,7 +23,4 @@ const CheckHistorySchema = new Schema(
   }
 );
 
-// TTL index optional (if you want automatic pruning later):
-// CheckHistorySchema.index({ checkedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 }); // 90 days
-
 export default mongoose.model("CheckHistory", CheckHistorySchema);

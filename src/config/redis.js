@@ -3,9 +3,7 @@ import config from './index.js';
 
 let redisClient = null;
 
-/**
- * Connect to Redis (if REDIS_URL exists)
- */
+//-- Connect to Redis --
 export function connectRedis() {
   const url = config.redis.url;
 
@@ -35,17 +33,13 @@ export function connectRedis() {
   return redisClient;
 }
 
-/**
- * Simple readiness check (used in /healthz later)
- */
+//-- Check if Redis is ready --
 export function isRedisReady() {
   if (!redisClient) return false;
   return redisClient.status === 'ready';
 }
 
-/**
- * Close Redis connection
- */
+//-- Close Redis Connection --
 export async function closeRedis() {
   if (redisClient) {
     await redisClient.quit();

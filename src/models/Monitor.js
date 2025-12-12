@@ -25,7 +25,7 @@ const MonitorSchema = new Schema(
     assertions: { type: [String], default: [] }, // simple assertions like "status==200"
 
     // scheduling / frequency
-    frequencyMinutes: { type: Number, default: 1 },
+    frequencyMinutes: { type: Number, default: 5 },
 
     // last known state
     lastStatus: {
@@ -36,7 +36,6 @@ const MonitorSchema = new Schema(
     lastResponseTime: { type: Number, default: null },
     lastCheckedAt: { type: Date, default: null },
 
-    // --- Step B fields ---
     consecutiveFails: { type: Number, default: 0 }, // increments on failure
     alertThreshold: { type: Number, default: 1 }, // send alert only after this many consecutive fails
     lastAlertAt: { type: Date, default: null }, // last time an alert was sent (down or up)

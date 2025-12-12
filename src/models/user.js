@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const RefreshTokenSchema = new Schema(
   {
-    // We will store hashed/opaque refresh token identifiers (not raw token)
+    //store hashed/opaque refresh token identifiers (not raw token)
     tokenHash: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, required: true },
@@ -65,12 +65,6 @@ const UserSchema = new Schema(
     },
   }
 );
-
-// A compact index to ensure email uniqueness at DB level (in addition to schema unique)
-// UserSchema.index({ email: 1 }, { unique: true });
-
-// Optional instance method examples (you can use these later)
-// e.g., user.comparePassword = async function(plain) { ... }  -- but we will implement utils separately
 
 const UserModel = mongoose.model("User", UserSchema);
 

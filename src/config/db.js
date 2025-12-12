@@ -3,9 +3,7 @@ import config from './index.js';
 
 mongoose.set('strictQuery', true); 
 
-/**
- * Connect to MongoDB Atlas
- */
+//-- DB Connection --
 export async function connectDB() {
   const mongoUri = config.db.mongoUri;
 
@@ -39,9 +37,7 @@ export async function connectDB() {
   });
 }
 
-/**
- * Close DB connection for shutdown or tests
- */
+//-- Close DB Connection --
 export async function closeDB() {
   try {
     await mongoose.connection.close();

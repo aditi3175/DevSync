@@ -1,4 +1,3 @@
-// src/controllers/monitor.controller.js
 import Monitor from "../models/Monitor.js";
 import CheckHistory from "../models/CheckHistory.js";
 import { performCheck } from "../services/check.service.js";
@@ -8,9 +7,8 @@ import {
   removeRepeatableMonitorJob,
 } from "../services/monitorQueue.service.js";
 
-/**
- * Controller: create monitor
- */
+
+//Controller: create monitor
 export async function createMonitor(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -50,9 +48,8 @@ export async function createMonitor(req, res, next) {
   }
 }
 
-/**
- * Controller: list monitors for user
- */
+
+//Controller: list monitors for user
 export async function listMonitors(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -65,9 +62,8 @@ export async function listMonitors(req, res, next) {
   }
 }
 
-/**
- * Controller: get monitor by id
- */
+
+//Controller: get monitor by id
 export async function getMonitor(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -85,9 +81,9 @@ export async function getMonitor(req, res, next) {
   }
 }
 
-/**
- * Controller: update monitor
- */
+
+//Controller: update monitor
+
 export async function updateMonitor(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -142,9 +138,7 @@ export async function updateMonitor(req, res, next) {
   }
 }
 
-/**
- * Controller: delete monitor
- */
+//Controller: delete monitor
 export async function deleteMonitor(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -167,20 +161,25 @@ export async function deleteMonitor(req, res, next) {
       );
     }
 
-    await monitor.remove();
-    // Optionally remove CheckHistory entries for this monitor
-    await CheckHistory.deleteMany({ monitorId: monitor._id });
+    await Monitor.deleteOne({ _id: id });
 
-    return res.json({ success: true, message: "Deleted" });
+    // Optionally remove CheckHistory entries for this monitor
+    try {
+      await CheckHistory.deleteMany({ monitorId: monitor._id });
+    } catch (err) {
+      console.warn(
+        "[monitor.controller] Failed to clean up CheckHistory:",
+        err?.message ?? err
+      );
+    }
+
+    return res.json({ success: true, message: "Monitor deleted successfully" });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Controller: run monitor now (enqueue job)
- * Enqueues a job to the monitor queue. Worker will process it.
- */
+//Controller: run monitor now (enqueue job)
 export async function runMonitorNow(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -204,9 +203,7 @@ export async function runMonitorNow(req, res, next) {
   }
 }
 
-/**
- * OPTIONAL: immediate synchronous run (useful for quick debugging)
- */
+//Controller: run monitor immediate (synchronous)
 export async function runMonitorImmediate(req, res, next) {
   try {
     const ownerId = req.user.id;
@@ -238,6 +235,37 @@ export async function runMonitorImmediate(req, res, next) {
     await monitor.save();
 
     return res.json({ success: true, result, history });
+  } catch (err) {
+    next(err);
+  }
+}
+
+//Controller: get monitor history
+export async function getMonitorHistory(req, res, next) {
+  try {
+    const ownerId = req.user.id;
+    const id = req.params.id;
+
+    // Verify monitor exists and belongs to user
+    const monitor = await Monitor.findById(id);
+    if (!monitor)
+      return res
+        .status(404)
+        .json({ success: false, message: "Monitor not found" });
+    if (String(monitor.ownerId) !== ownerId)
+      return res.status(403).json({ success: false, message: "Forbidden" });
+
+    // Get last 24 hours of check history
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const history = await CheckHistory.find({
+      monitorId: id,
+      checkedAt: { $gte: oneDayAgo },
+    })
+      .sort({ checkedAt: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json({ success: true, history });
   } catch (err) {
     next(err);
   }

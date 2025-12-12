@@ -1,4 +1,3 @@
-// src/workers/check.worker.js
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bullmq = require("bullmq");
@@ -31,9 +30,7 @@ function allowedByCooldown(lastAlertAt, cooldownMinutes) {
   return elapsedMs >= cooldownMinutes * 60 * 1000;
 }
 
-/**
- * Initialize: connect to MongoDB first, then start worker.
- */
+// Initialize worker
 async function init() {
   try {
     console.log("🔌 Worker: connecting to MongoDB...");
@@ -89,13 +86,7 @@ async function init() {
   }
 }
 
-/**
- * Job handler - implements Step B:
- *  - increments consecutiveFails on failure
- *  - resets consecutiveFails on success
- *  - sends alerts only after consecutiveFails >= alertThreshold
- *  - respects cooldownMinutes (from owner/user)
- */
+// Handle a job
 async function handle(job) {
   const { monitorId, trigger = "manual" } = job.data;
   console.log(

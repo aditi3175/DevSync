@@ -1,4 +1,3 @@
-// src/utils/auth.js
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import config from "../config/index.js";

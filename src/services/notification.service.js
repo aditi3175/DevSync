@@ -1,4 +1,3 @@
-// src/services/notification.service.js
 import { notificationQueue } from "../queues/notificationQueue.js";
 
 /**

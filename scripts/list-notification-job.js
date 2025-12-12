@@ -1,4 +1,3 @@
-// scripts/list-notification-jobs.js
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bullmq = require("bullmq");

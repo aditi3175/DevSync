@@ -1,4 +1,3 @@
-// src/workers/notification.worker.js
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bullmq = require("bullmq");
@@ -127,7 +126,7 @@ async function handle(job) {
   return { ok: true };
 }
 
-/** INIT **/
+
 async function init() {
   try {
     console.log("🔌 Notification worker: connecting to MongoDB...");
