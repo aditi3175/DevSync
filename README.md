@@ -59,19 +59,6 @@ It provides scheduled checks, detailed monitoring history, alert notifications, 
 
 ---
 
-## 🏗️ Architecture Overview
-Frontend (React)
-↓
-Backend (Node + Express)
-↓
-MongoDB (Data Storage)
-↓
-BullMQ + Redis (Queues & Scheduling)
-↓
-Workers (Check Worker, Notification Worker)
-
----
-
 ## 🧵 Workers
 
 ### ✅ Check Worker
@@ -88,14 +75,6 @@ Workers (Check Worker, Notification Worker)
 
 ---
 
-## 🐳 Redis Setup (Local)
-
-Redis is running locally using Docker:
-
-```bash
-docker run -d -p 6379:6379 redis
-MongoDB is hosted on MongoDB Atlas.
-
 ### ▶️ Running the Project
 Backend
 cd devsync-backend
@@ -110,3 +89,25 @@ node src/workers/notification.worker.js
 cd devsync-frontend
 npm install
 npm run dev
+
+---
+
+## 🏗️ Architecture Overview
+- Frontend (React)
+- ↓
+- Backend (Node + Express)
+- ↓
+- MongoDB (Data Storage)
+- ↓
+- BullMQ + Redis (Queues & Scheduling)
+- ↓
+- Workers (Check Worker, Notification Worker)
+
+## 🐳 Redis Setup (Local)
+
+Redis is running locally using Docker:
+
+```bash
+docker run -d -p 6379:6379 redis
+MongoDB is hosted on MongoDB Atlas.
+
