@@ -1,0 +1,54 @@
+name: DevSync Workers
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"   # runs every 1 minute
+  workflow_dispatch:        # allow manual run also
+
+jobs:
+  run-workers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install backend dependencies
+        run: |
+          cd devsync-backend
+          npm install
+
+      - name: Run CHECK worker
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TEST_RECIPIENT: ${{ secrets.EMAIL_TEST_RECIPIENT }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          JWT_ACCESS_TOKEN_SECRET: ${{ secrets.JWT_ACCESS_TOKEN_SECRET }}
+          JWT_REFRESH_TOKEN_SECRET: ${{ secrets.JWT_REFRESH_TOKEN_SECRET }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: |
+          cd devsync-backend
+          node src/workers/check.worker.js
+
+      - name: Run NOTIFICATION worker
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TEST_RECIPIENT: ${{ secrets.EMAIL_TEST_RECIPIENT }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          JWT_ACCESS_TOKEN_SECRET: ${{ secrets.JWT_ACCESS_TOKEN_SECRET }}
+          JWT_REFRESH_TOKEN_SECRET: ${{ secrets.JWT_REFRESH_TOKEN_SECRET }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: |
+          cd devsync-backend
+          node src/workers/notification.worker.js
