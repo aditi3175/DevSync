@@ -3,7 +3,8 @@ import config from "./config/index.js";
 import { connectDB, closeDB } from "./config/db.js";
 import { connectRedis, closeRedis } from "./config/redis.js";
 import app from "./app.js";
-
+import "./workers/check.worker.js";
+import "./workers/notification.worker.js";
 let server;
 let shuttingDown = false;
 
