@@ -5,7 +5,6 @@ const { Worker } = require("bullmq");
 import config from "../config/index.js";
 import Monitor from "../models/Monitor.js";
 import User from "../models/user.js";
-import NotificationLog from "../models/NotificationLog.js";
 import { connectDB } from "../config/db.js";
 import {
   sendMail,
@@ -31,7 +30,7 @@ async function init() {
   await connectDB();
   console.log("📨 Notification Worker connected!");
 
-  const worker = new Worker(QUEUE_NAME, async (job) => handle(job), {
+  new Worker(QUEUE_NAME, async (job) => handle(job), {
     ...connectionOption,
     concurrency: 2,
   });
@@ -48,66 +47,41 @@ async function handle(job) {
     ? await User.findById(monitor.ownerId).lean()
     : null;
 
-  /* ----------------------------------
-      IDEMPOTENCY: notification log
-  ---------------------------------- */
-  const exists = await NotificationLog.findOne({
-    checkRunId: data.checkRunId,
-    type: name,
-  });
-
-  if (exists) {
-    console.log("⚠ Duplicate notification, skipping");
-    return;
-  }
-
-  // create record before sending
-  await NotificationLog.create({
-    checkRunId: data.checkRunId,
-    monitorId: monitor._id,
-    type: name,
-    sent: false,
-  });
-
-  /* ----------------------------------
-        COOLDOWN
-  ---------------------------------- */
+  // ------------------------------
+  // COOLDOWN CHECK
+  // ------------------------------
   const cooldownMinutes = Number(user?.cooldownMinutes ?? 10);
   const lastAlertAt = monitor.lastAlertAt || null;
 
   if (!allowedByCooldown(lastAlertAt, cooldownMinutes)) {
-    console.log("⏳ Skipping notification due to cooldown");
+    console.log("⏳ Notification skipped (cooldown)");
     return;
   }
 
   const to = user?.email || config.email.testRecipient;
 
-  /* ----------------------------------
-        SEND EMAIL
-  ---------------------------------- */
+  // ------------------------------
+  // SEND EMAIL
+  // ------------------------------
   if (name === "monitor-down") {
     const tpl = downTemplate({ monitor, result: data.result });
     await sendMail({ to, ...tpl });
+    console.log(`📨 DOWN alert sent → ${to}`);
   }
 
   if (name === "monitor-up") {
     const tpl = upTemplate({ monitor, result: data.result });
     await sendMail({ to, ...tpl });
+    console.log(`📨 UP alert sent → ${to}`);
   }
 
-  // mark as sent
-  await NotificationLog.updateOne(
-    { checkRunId: data.checkRunId },
-    { $set: { sent: true } }
-  );
-
-  // update cooldown timestamp
+  // ------------------------------
+  // UPDATE COOLDOWN TIMESTAMP
+  // ------------------------------
   await Monitor.updateOne(
     { _id: monitor._id },
     { $set: { lastAlertAt: new Date() } }
   );
-
-  console.log(`[notify-worker] Notification SENT → ${name}`);
 }
 
 init();
