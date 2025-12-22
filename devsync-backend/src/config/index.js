@@ -15,7 +15,7 @@ function maskSecret(value) {
   const s = String(value);
   if (s.length <= 6) return '***';
   return `${s.slice(0, 3)}...${s.slice(-3)}`;
-}4
+}
 
 const raw = {
   PORT: process.env.PORT,

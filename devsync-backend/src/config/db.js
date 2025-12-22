@@ -14,8 +14,17 @@ export async function connectDB() {
 
   try {
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000, // fail fast if cannot connect
+      // Connection pooling configuration
+      maxPoolSize: 10, // Maximum connections in pool
+      minPoolSize: 5, // Minimum connections to maintain
+      maxIdleTimeMS: 45000, // Close idle connections after 45s
+      serverSelectionTimeoutMS: 10000, // Fail fast if cannot connect
+      socketTimeoutMS: 45000, // 45s socket timeout
+      family: 4, // Use IPv4 (can be 4 or 6)
+      retryWrites: true, // Enable retry writes
+      retryReads: true, // Enable retry reads
     });
+
 
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (err) {

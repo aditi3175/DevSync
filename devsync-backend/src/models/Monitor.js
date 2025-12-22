@@ -23,10 +23,7 @@ const MonitorSchema = new Schema(
     frequencyMinutes: { type: Number, required: true, default: 5 },
     timeoutMs: { type: Number, default: 5000 },
     assertions: { type: [String], default: [] }, // simple assertions like "status==200"
-
-    // scheduling / frequency
-    frequencyMinutes: { type: Number, default: 5 },
-
+    
     // last known state
     lastStatus: {
       type: String,
