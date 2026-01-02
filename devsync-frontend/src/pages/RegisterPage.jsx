@@ -10,6 +10,8 @@ import {
   ArrowRight,
   Loader,
   CheckCircle,
+  Terminal,
+  ShieldCheck,
 } from "lucide-react";
 
 const RegisterPage = () => {
@@ -43,7 +45,7 @@ const RegisterPage = () => {
 
     try {
       await api.post("/auth/register", formData);
-      setSuccess("✅ Registration successful! Redirecting to login...");
+      setSuccess("User registration sequence complete. Redirecting...");
 
       setTimeout(() => {
         navigate("/login", { replace: true });
@@ -59,188 +61,192 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* --- Techie Grid Background --- */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-[-10%] right-[20%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] mix-blend-screen animate-pulse-slow"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px] mix-blend-screen animate-pulse-slow"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Card */}
-        <div className="backdrop-blur-md bg-slate-800/30 border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
-          {/* Logo */}
-          <div className="flex items-center justify-center space-x-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Activity className="w-7 h-7 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-              DevSync
-            </h1>
-          </div>
+      <div className="relative z-10 w-full max-w-[450px]">
+        {/* Decorative Top Label */}
+        <div className="flex justify-between items-center mb-2 px-1">
+          <span className="text-[10px] font-mono text-emerald-500/60 uppercase tracking-widest flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+            System Registration
+          </span>
+          <span className="text-[10px] font-mono text-slate-600">
+            ID: NULL-PTR
+          </span>
+        </div>
 
-          {/* Heading */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Get Started</h2>
-            <p className="text-slate-400">
-              Create your account to start monitoring
-            </p>
-          </div>
+        {/* Main Card */}
+        <div className="bg-[#131316]/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_0_50px_-12px_rgba(16,185,129,0.1)] overflow-hidden">
+          {/* Top Gradient Line */}
+          <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500"></div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm animate-in fade-in duration-300">
-              <p className="font-semibold">❌ {error}</p>
-            </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm animate-in fade-in duration-300">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5" />
-                <p className="font-semibold">{success}</p>
+          <div className="p-8">
+            {/* Header */}
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 border border-slate-700 shadow-lg mb-4 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-emerald-500/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                <Activity className="w-7 h-7 text-emerald-400 relative z-10" />
               </div>
+              <h2 className="text-2xl font-bold text-white tracking-tight font-mono">
+                <span className="text-emerald-500">INIT</span>_ACCOUNT
+              </h2>
+              <p className="text-slate-400 text-xs font-mono mt-2">
+                Create new administrator access point
+              </p>
             </div>
-          )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-slate-300 mb-2"
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-950/30 border border-red-500/30 rounded flex items-center gap-3 text-red-400 text-xs font-mono animate-in fade-in">
+                <Terminal className="w-4 h-4 flex-shrink-0" />
+                <span>Error: {error}</span>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="mb-6 p-3 bg-emerald-950/30 border border-emerald-500/30 rounded flex items-center gap-3 text-emerald-400 text-xs font-mono animate-in fade-in">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="name"
+                  className="text-xs font-mono text-emerald-500/80 uppercase tracking-wider ml-1"
+                >
+                  Full Identity
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-lg blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors z-10" />
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="JOHN DOE"
+                    className="relative z-10 w-full pl-10 pr-4 py-3 bg-[#0a0a0c] border border-slate-800 rounded-lg text-slate-200 text-sm placeholder-slate-700 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-mono text-emerald-500/80 uppercase tracking-wider ml-1"
+                >
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-lg blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors z-10" />
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="user@devsync.io"
+                    className="relative z-10 w-full pl-10 pr-4 py-3 bg-[#0a0a0c] border border-slate-800 rounded-lg text-slate-200 text-sm placeholder-slate-700 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="password"
+                  className="text-xs font-mono text-emerald-500/80 uppercase tracking-wider ml-1"
+                >
+                  Set Password (Min 8)
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-lg blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors z-10" />
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="relative z-10 w-full pl-10 pr-4 py-3 bg-[#0a0a0c] border border-slate-800 rounded-lg text-slate-200 text-sm placeholder-slate-700 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full relative group overflow-hidden py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                />
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <div className="flex items-center justify-center space-x-2 relative z-10">
+                  {loading ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      <span className="font-mono text-sm">PROCESSING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-mono text-sm">
+                        EXECUTE REGISTRATION
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </div>
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-2 bg-[#16161a] text-[10px] text-slate-500 font-mono uppercase">
+                  Existing User
+                </span>
               </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                Password (Min 8 Characters)
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 mt-6"
+            {/* Login Link */}
+            <Link
+              to="/login"
+              className="w-full group py-3 px-4 border border-slate-700/50 hover:border-emerald-500/50 bg-slate-900/30 text-slate-400 hover:text-emerald-400 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 text-xs font-mono"
             >
-              {loading ? (
-                <>
-                  <Loader className="w-5 h-5 animate-spin" />
-                  <span>Creating account...</span>
-                </>
-              ) : (
-                <>
-                  <span>Create Account</span>
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </form>
+              <ShieldCheck className="w-4 h-4" />
+              <span>RETURN_TO_LOGIN</span>
+            </Link>
 
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-700/50"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-slate-800/30 text-slate-400">
-                Already registered?
-              </span>
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <p className="text-[10px] text-slate-600 font-mono">
+                By executing, you agree to Protocol Terms & Privacy Policies.
+              </p>
             </div>
           </div>
-
-          {/* Login Link */}
-          <Link
-            to="/login"
-            className="w-full py-3 px-4 border border-slate-700/50 hover:border-slate-600/50 text-slate-300 hover:text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
-          >
-            <span>Sign In Instead</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-
-          {/* Footer */}
-          <p className="text-center text-xs text-slate-500 mt-6">
-            By creating an account, you agree to our Terms of Service and
-            Privacy Policy
-          </p>
         </div>
       </div>
-
-      <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   );
 };

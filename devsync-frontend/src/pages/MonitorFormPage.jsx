@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import MonitorForm from "../components/MonitorForm.jsx";
 import api from "../api.js";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertCircle,
+  Settings,
+  Terminal,
+  Loader,
+} from "lucide-react";
 
 const MonitorFormPage = () => {
   const navigate = useNavigate();
@@ -40,114 +46,127 @@ const MonitorFormPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen bg-[#0a0a0c] font-sans text-slate-300 relative selection:bg-cyan-500/30 selection:text-cyan-100">
+      {/* Background Grid */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f1a_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        {/* Subtle glow for focus */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none"></div>
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
-        {/* Back Button */}
-        <Link
-          to="/dashboard"
-          className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors mb-8 group"
-        >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Dashboard</span>
-        </Link>
+        {/* Navigation / Breadcrumb */}
+        <div className="mb-8 flex items-center justify-between">
+          <Link
+            to="/dashboard"
+            className="flex items-center space-x-2 text-xs font-mono text-slate-500 hover:text-cyan-400 transition-colors group uppercase tracking-widest"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Return_To_Base</span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-2 text-[10px] font-mono text-slate-600 border border-slate-800 rounded px-2 py-1 bg-[#0a0a0c]">
+            <span>SESSION_ID:</span>
+            <span className="text-slate-400">
+              {isEditing ? id : "NEW_INSTANCE"}
+            </span>
+          </div>
+        </div>
 
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">
-            {isEditing ? "Edit Monitor" : "Create New Monitor"}
-          </h1>
-          <p className="text-slate-400">
+        <div className="mb-8 border-b border-white/5 pb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+              <Settings className="w-6 h-6 text-cyan-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+              {isEditing ? "Modify Protocol" : "Initialize New Monitor"}
+            </h1>
+          </div>
+          <p className="text-slate-400 text-sm font-mono pl-[3.25rem]">
             {isEditing
-              ? "Update your monitoring configuration"
-              : "Set up a new monitor to track your service"}
+              ? ">> Updating configuration parameters for existing node."
+              : ">> Establish connection parameters for a new tracking endpoint."}
           </p>
         </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="backdrop-blur-md bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 flex flex-col items-center justify-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-300 text-lg">Loading Monitor Data...</p>
+          <div className="flex flex-col items-center justify-center py-24 border border-dashed border-slate-800 rounded-xl bg-[#0a0a0c]/50">
+            <Loader className="w-10 h-10 text-cyan-500 animate-spin mb-4" />
+            <p className="text-cyan-500/80 text-sm font-mono animate-pulse">
+              RETRIEVING_CONFIG_DATA...
+            </p>
           </div>
         )}
 
         {/* Error State */}
         {fetchError && (
-          <div className="backdrop-blur-md bg-red-500/10 border border-red-500/20 rounded-2xl p-8 mb-8">
-            <div className="flex items-start space-x-4">
-              <AlertCircle className="w-6 h-6 text-red-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold text-red-400 mb-2">
-                  Error Loading Monitor
-                </h3>
-                <p className="text-red-300 mb-4">{fetchError}</p>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Dashboard</span>
-                </Link>
-              </div>
+          <div className="bg-red-950/20 border border-red-500/20 rounded-xl p-6 mb-8 flex items-start gap-4">
+            <div className="p-2 bg-red-500/10 rounded-lg">
+              <AlertCircle className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-red-400 font-mono mb-1 uppercase tracking-wider">
+                Data Retrieval Failure
+              </h3>
+              <p className="text-red-300/80 text-sm mb-4 font-mono">
+                {fetchError}
+              </p>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg transition-colors text-xs font-mono uppercase"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>Abort Sequence</span>
+              </Link>
             </div>
           </div>
         )}
 
         {/* Not Found State */}
         {isEditing && !loading && !initialData && !fetchError && (
-          <div className="backdrop-blur-md bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-8 mb-8">
-            <div className="flex items-start space-x-4">
-              <AlertCircle className="w-6 h-6 text-yellow-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold text-yellow-400 mb-2">
-                  Monitor Not Found
-                </h3>
-                <p className="text-yellow-300 mb-4">
-                  Unable to load monitor data. Please try again or go back.
-                </p>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Dashboard</span>
-                </Link>
-              </div>
+          <div className="bg-yellow-950/20 border border-yellow-500/20 rounded-xl p-6 mb-8 flex items-start gap-4">
+            <div className="p-2 bg-yellow-500/10 rounded-lg">
+              <AlertCircle className="w-6 h-6 text-yellow-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-yellow-400 font-mono mb-1 uppercase tracking-wider">
+                Target Not Found
+              </h3>
+              <p className="text-yellow-300/80 text-sm mb-4 font-mono">
+                The requested monitor ID does not exist in the registry.
+              </p>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 text-yellow-400 rounded-lg transition-colors text-xs font-mono uppercase"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>Return to Dashboard</span>
+              </Link>
             </div>
           </div>
         )}
 
-        {/* Form */}
+        {/* Form Container */}
         {!loading && !fetchError && (!isEditing || initialData) && (
-          <div className="animate-in fade-in duration-300">
-            <MonitorForm
-              monitorId={id}
-              initialData={isEditing ? initialData : null}
-              onSuccess={handleSuccess}
-            />
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* This container gives a 'panel' look to the form inside */}
+            <div className="bg-[#131316] border border-white/5 rounded-xl shadow-2xl shadow-black/50 overflow-hidden relative">
+              {/* Decorative Top Bar */}
+              <div className="h-1 w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600"></div>
+
+              <div className="p-1">
+                <MonitorForm
+                  monitorId={id}
+                  initialData={isEditing ? initialData : null}
+                  onSuccess={handleSuccess}
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
     </div>
   );
 };
