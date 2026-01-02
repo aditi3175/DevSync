@@ -73,6 +73,9 @@ Applies user preferences
 Applies cooldown logic
 Sends email alerts
 
+Note: Workers are executed locally during development and demos.
+Production deployment can be done using dedicated background worker services.
+
 ---
 
 ### ▶️ Running the Project
